@@ -38,8 +38,14 @@ def scrape():
         "User-Agent": "Mozilla/5.0",
         "Accept-Language": "en-US,en;q=0.9"
     }
+    cookies = {
+    "li_at": os.environ["LINKEDIN_LI_AT"],
+    "JSESSIONID": os.environ["LINKEDIN_JSESSIONID"]
+}
 
-    resp = requests.get(LINKEDIN_URL, headers=headers)
+    resp = requests.get(LINKEDIN_URL, headers=headers, cookies=cookies)
+
+    # resp = requests.get(LINKEDIN_URL, headers=headers)
     soup = BeautifulSoup(resp.text, "html.parser")
 
     seen = load_seen()
