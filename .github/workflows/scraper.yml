@@ -1,0 +1,46 @@
+name: LinkedIn Job Scraper
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write     # needed for pushing changes to repo
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out Repo
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run LinkedIn Scraper
+      env:
+        LINKEDIN_URL: ${{ secrets.LINKEDIN_URL }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python linkedin_scraper.py
+
+    - name: Commit updated seen_jobs.txt
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add seen_jobs.txt
+          git commit -m "Update seen_jobs list"
+          git push
+        else
+          echo "No new jobs to commit."
+        fi
